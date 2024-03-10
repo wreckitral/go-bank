@@ -60,9 +60,11 @@ func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) err
 }
 
 func (s *APIServer) handleGetAccountById(w http.ResponseWriter, r *http.Request) error {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	idStr := mux.Vars(r)["id"]
+
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		return fmt.Errorf("invalid id given %s", id)
+		return fmt.Errorf("invalid id given %s", idStr)
 	}
 
 	account, err := s.Store.GetAccountById(id)

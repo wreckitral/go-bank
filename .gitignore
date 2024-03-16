@@ -1,1 +1,3 @@
 bin/go-bank
+
+types_test.go

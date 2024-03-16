@@ -27,6 +27,7 @@ func NewAPIServer(listenAddr string, store Storage) *APIServer {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/login", makeHTTPHandlerFunc(s.handleLogin))
 	router.HandleFunc("/account", makeHTTPHandlerFunc(s.handleAccount))
 	router.HandleFunc("/account/{id}", withJWTAuth(makeHTTPHandlerFunc(s.handleGetAccountById), s.Store))
 	router.HandleFunc("/transfer", makeHTTPHandlerFunc(s.handleTransfer))
@@ -34,6 +35,36 @@ func (s *APIServer) Run() {
 	log.Println("JSON API server running on port:", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
+}
+
+func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {
+	if r.Method != "POST" {
+		return fmt.Errorf("method not allowed %s", r.Method)
+	}
+	var req LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return err
+	}
+
+	acc, err := s.Store.GetAccountByNumber(int(req.Number))
+	if err != nil {
+		return err
+	}
+
+	if !acc.ValidatePass(req.Password) {
+		return fmt.Errorf("invalid credentials")
+	}
+	token, err := createJWT(acc)
+	if err != nil {
+		return err
+	}
+
+	res := LoginResponse{
+		Token:  token,
+		Number: acc.Number,
+	}
+
+	return writeJSON(w, http.StatusOK, res)
 }
 
 func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {

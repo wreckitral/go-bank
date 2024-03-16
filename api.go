@@ -116,17 +116,14 @@ func (s *APIServer) handleCreatecount(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	account := NewAccount(CreateAccountReq.FirstName, CreateAccountReq.LastName)
-	if err := s.Store.CreateAccount(account); err != nil {
-		return err
-	}
-
-	tokenString, err := createJWT(account)
+	account, err := NewAccount(CreateAccountReq.FirstName, CreateAccountReq.LastName, CreateAccountReq.Password)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("JWT token: ", tokenString)
+	if err := s.Store.CreateAccount(account); err != nil {
+		return err
+	}
 
 	return writeJSON(w, http.StatusOK, account)
 }
@@ -211,11 +208,6 @@ func withJWTAuth(handlerFunc http.HandlerFunc, s Storage) http.HandlerFunc {
 		claims := token.Claims.(jwt.MapClaims)
 
 		if account.Number != int64(claims["accountNumber"].(float64)) {
-			permissionDenied(w)
-			return
-		}
-
-		if err != nil {
 			permissionDenied(w)
 			return
 		}

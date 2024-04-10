@@ -1,4 +1,4 @@
-### Go Bank
-# usage
+# Go Bank
+## usage
 run the program using
 - make run 

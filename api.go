@@ -34,7 +34,9 @@ func (s *APIServer) Run() {
 
 	log.Println("JSON API server running on port:", s.listenAddr)
 
-	http.ListenAndServe(s.listenAddr, router)
+    if err := http.ListenAndServe(s.listenAddr, router); err != nil {
+        log.Fatal(err)
+    }
 }
 
 func (s *APIServer) handleLogin(w http.ResponseWriter, r *http.Request) error {

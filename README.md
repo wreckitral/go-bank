@@ -1,5 +1,6 @@
 # Go Bank
 Bank API service made using golang, from scratch.
-## usage
+
+## How To Run
 run the program using
-- make run 
+`make run`, server will run on port 7777
